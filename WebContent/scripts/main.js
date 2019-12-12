@@ -13,7 +13,10 @@
    */
   function init() {
     // register event listeners
+    document.querySelector('#login-form-btn').addEventListener('click', onSessionInvalid);
     document.querySelector('#login-btn').addEventListener('click', login);
+    document.querySelector('#register-form-btn').addEventListener('click', showRegisterForm);
+    document.querySelector('#register-btn').addEventListener('click', register);
     document.querySelector('#nearby-btn').addEventListener('click', loadNearbyItems);
     document.querySelector('#fav-btn').addEventListener('click', loadFavoriteItems);
     document.querySelector('#recommend-btn').addEventListener('click', loadRecommendedItems);
@@ -50,6 +53,7 @@
     user_fullname = result.name;
 
     var loginForm = document.querySelector('#login-form');
+    var registerForm = document.querySelector('#register-form');
     var itemNav = document.querySelector('#item-nav');
     var itemList = document.querySelector('#item-list');
     var avatar = document.querySelector('#avatar');
@@ -64,12 +68,14 @@
     showElement(welcomeMsg);
     showElement(logoutBtn, 'inline-block');
     hideElement(loginForm);
+    hideElement(registerForm);
 
     initGeoLocation();
   }
 
   function onSessionInvalid() {
     var loginForm = document.querySelector('#login-form');
+    var registerForm = document.querySelector('#register-form');
     var itemNav = document.querySelector('#item-nav');
     var itemList = document.querySelector('#item-list');
     var avatar = document.querySelector('#avatar');
@@ -81,7 +87,9 @@
     hideElement(avatar);
     hideElement(logoutBtn);
     hideElement(welcomeMsg);
+    hideElement(registerForm);
 
+    clearLoginError();
     showElement(loginForm);
   }
 
@@ -93,6 +101,27 @@
     var displayStyle = style ? style : 'block';
     element.style.display = displayStyle;
   }
+  
+  function showRegisterForm() {
+    var loginForm = document.querySelector('#login-form');
+    var registerForm = document.querySelector('#register-form');
+    var itemNav = document.querySelector('#item-nav');
+    var itemList = document.querySelector('#item-list');
+    var avatar = document.querySelector('#avatar');
+    var welcomeMsg = document.querySelector('#welcome-msg');
+    var logoutBtn = document.querySelector('#logout-link');
+
+    hideElement(itemNav);
+    hideElement(itemList);
+    hideElement(avatar);
+    hideElement(logoutBtn);
+    hideElement(welcomeMsg);
+    hideElement(loginForm);
+    
+    clearRegisterResult();
+    showElement(registerForm);
+  }  
+  
 
   function initGeoLocation() {
     if (navigator.geolocation) {
@@ -167,8 +196,8 @@
       // error
       function() {
         showLoginError();
-      },
-      true);
+      }
+    );
   }
 
   function showLoginError() {
@@ -177,6 +206,65 @@
 
   function clearLoginError() {
     document.querySelector('#login-error').innerHTML = '';
+  }
+
+  // -----------------------------------
+  // Register
+  // -----------------------------------
+
+  function register() {
+    var username = document.querySelector('#register-username').value;
+    var password = document.querySelector('#register-password').value;
+    var firstName = document.querySelector('#register-first-name').value;
+    var lastName = document.querySelector('#register-last-name').value;
+    
+    if (username === "" || password == "" || firstName === "" || lastName === "") {
+    	showRegisterResult('Please fill in all fields');
+    	return
+    }
+    
+    if (username.match(/^[a-z0-9_]+$/) === null) {
+    	showRegisterResult('Invalid username');
+    	return
+    }
+    
+    password = md5(username + md5(password));
+
+    // The request parameters
+    var url = './register';
+    var req = JSON.stringify({
+      user_id : username,
+      password : password,
+      first_name: firstName,
+      last_name: lastName,
+    });
+
+    ajax('POST', url, req,
+      // successful callback
+      function(res) {
+        var result = JSON.parse(res);
+
+        // successfully logged in
+        if (result.status === 'OK') {
+        	showRegisterResult('Succesfully registered');
+        } else {
+        	showRegisterResult('User already existed');
+        }
+      },
+
+      // error
+      function() {
+    	  showRegisterResult('Failed to register');
+      }
+    );
+  }
+
+  function showRegisterResult(registerMessage) {
+    document.querySelector('#register-result').innerHTML = registerMessage;
+  }
+
+  function clearRegisterResult() {
+    document.querySelector('#register-result').innerHTML = '';
   }
 
 
@@ -373,22 +461,22 @@
   /**
    * API #4 Toggle favorite (or visited) items
    *
-   * @param item_id - The item business id
+   * @param item - The item from the list
    *
    * API end point: [POST]/[DELETE] /history request json data: {
-   * user_id: 1111, visited: [a_list_of_business_ids] }
+   * user_id: 1111, favorite: item }
    */
-  function changeFavoriteItem(item_id) {
+  function changeFavoriteItem(item) {
     // check whether this item has been visited or not
-    var li = document.querySelector('#item-' + item_id);
-    var favIcon = document.querySelector('#fav-icon-' + item_id);
+    var li = document.querySelector('#item-' + item.item_id);
+    var favIcon = document.querySelector('#fav-icon-' + item.item_id);
     var favorite = !(li.dataset.favorite === 'true');
 
     // request parameters
     var url = './history';
     var req = JSON.stringify({
       user_id: user_id,
-      favorite: [item_id]
+      favorite: item
     });
     var method = favorite ? 'POST' : 'DELETE';
 
@@ -521,7 +609,7 @@
     });
 
     favLink.onclick = function() {
-      changeFavoriteItem(item_id);
+      changeFavoriteItem(item);
     };
 
     favLink.appendChild($create('i', {

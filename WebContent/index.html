@@ -23,7 +23,7 @@
   
   <div class="container">
     <header>
-      <p>    
+      <p>
         <span>Item</span>
         <br /> Recommendation
       </p>
@@ -35,8 +35,23 @@
         <input id="username" name="username" type="text">
         <label for="password">Password:</label>
         <input id="password" name="password" type="password">
+        <button id="register-form-btn">New User? Register</button>
         <button id="login-btn">Login</button>
         <p id="login-error"></p>
+      </div>
+      
+      <div id="register-form">
+        <label for="username">Username: *</label>
+        <input id="register-username" name="username" type="text">
+        <label for="password">Password: *</label>
+        <input id="register-password" name="password" type="password">
+        <label for="first-name">First Name: *</label>
+        <input id="register-first-name" name="first-name" type="text">
+        <label for="last-name">Last Name: *</label>
+        <input id="register-last-name" name="last-name" type="text">
+        <button id="login-form-btn">Back to Login</button>
+        <button id="register-btn">Register</button>
+        <p id="register-result"></p>
       </div>
 
       <aside id="item-nav">
