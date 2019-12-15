@@ -71,7 +71,6 @@ public class Item {
 	}
 	
 	
-	
 	public static class ItemBuilder {
 		private String itemId;
 		private String name;

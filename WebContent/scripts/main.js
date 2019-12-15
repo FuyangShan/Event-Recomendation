@@ -20,8 +20,8 @@
     document.querySelector('#nearby-btn').addEventListener('click', loadNearbyItems);
     document.querySelector('#fav-btn').addEventListener('click', loadFavoriteItems);
     document.querySelector('#recommend-btn').addEventListener('click', loadRecommendedItems);
-    // validateSession();
-    onSessionValid({"user_id":"1111","name":"John Smith","status":"OK"});
+    validateSession();
+    //onSessionValid({"user_id":"1111","name":"John Smith","status":"OK"});
   }
 
   /**

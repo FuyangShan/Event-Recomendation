@@ -1,6 +1,7 @@
 package db;
 
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Connection;
 
@@ -16,7 +17,7 @@ public class MySQLTableCreation {
 			if (conn == null) {
 				return;
 			}
-			
+
 			// Step 2 Drop tables in case they exist.
 			Statement statement = conn.createStatement();
 			String sql = "DROP TABLE IF EXISTS categories";
@@ -74,7 +75,7 @@ public class MySQLTableCreation {
 			// Step 4: insert fake user 1111/3229c1097c00d497a0fd282d586be050
 			sql = "INSERT INTO users VALUES('1111', '3229c1097c00d497a0fd282d586be050', 'John', 'Smith')";
 			statement.executeUpdate(sql);
-			
+
 			conn.close();
 			System.out.println("Import done successfully");
 
@@ -82,4 +83,5 @@ public class MySQLTableCreation {
 			e.printStackTrace();
 		}
 	}
+
 }

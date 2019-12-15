@@ -31,6 +31,7 @@ public class RpcHelper {
 	}
 	
 	// Parses a JSONObject from http request.
+	// 把一个string读成一个JSONObject
 		public static JSONObject readJSONObject(HttpServletRequest request) {
 			StringBuilder sBuilder = new StringBuilder();
 			try (BufferedReader reader = request.getReader()) {
@@ -66,5 +67,4 @@ public class RpcHelper {
 			builder.setCategories(categories);
 			return builder.build();
 		}
-
 }

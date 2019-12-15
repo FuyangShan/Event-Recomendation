@@ -1,0 +1,56 @@
+package recommendation;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import db.MySQLConnection;
+import entity.Item;
+import external.TicketMasterClient;
+
+
+public class GeoRecommendation {
+	public List<Item> recommendItems(String userId, double lat, double lon) {
+		List<Item> recommendedItems = new ArrayList<>();
+
+		// Step 1, get all favorited itemids
+		MySQLConnection connection = new MySQLConnection();
+		Set<String> favoritedItemIds = connection.getFavoriteItemIds(userId);
+
+		// Step 2, get all categories, sort by count
+		// {"sports": 5, "music": 3, "art": 2}
+		Map<String, Integer> allCategories = new HashMap<>();
+		for (String itemId : favoritedItemIds) {
+			Set<String> categories = connection.getCategories(itemId);
+			for (String category : categories) {
+				allCategories.put(category, allCategories.getOrDefault(category, 0) + 1);
+			}
+		}
+		connection.close();
+
+		List<Entry<String, Integer>> categoryList = new ArrayList<>(allCategories.entrySet());
+		Collections.sort(categoryList, (Entry<String, Integer> e1, Entry<String, Integer> e2) -> {
+			return Integer.compare(e2.getValue(), e1.getValue());
+		});
+
+		// Step 3, search based on category, filter out favorite items
+		TicketMasterClient ticketMasterClient = new TicketMasterClient();
+		Set<String> visitedItemIds = new HashSet<>();
+		for (Entry<String, Integer> category : categoryList) {
+			List<Item> items = ticketMasterClient.search(lat, lon, category.getKey());
+
+			for (Item item : items) {
+				if (!favoritedItemIds.contains(item.getItemId()) && !visitedItemIds.contains(item.getItemId())) {
+					recommendedItems.add(item);
+					visitedItemIds.add(item.getItemId());
+				}
+			}
+		}
+		return recommendedItems;
+	}
+}
